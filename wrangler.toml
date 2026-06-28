@@ -3,6 +3,9 @@ main = "worker/index.ts"
 compatibility_date = "2026-06-01"
 assets = { directory = "./dist", binding = "ASSETS" }
 
+# wrangler.toml
+name = 'worker0'
+
 [[d1_databases]]
 binding = "DB"
 database_name = "expense_notes_db"
