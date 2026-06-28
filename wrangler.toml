@@ -1,7 +1,6 @@
 name = "worker0"
-main = "src/index.ts"
+main = "worker/index.ts"
 compatibility_date = "2026-06-28"
-preview_urls = true
 
 [assets]
 directory = "./dist"
@@ -12,6 +11,3 @@ binding = "DB"
 database_name = "expense_notes_db"
 database_id = "5addc56d-9e7c-41f4-8684-4588a7d0a1f6"
 migrations_dir = "migrations"
-
-[observability]
-enabled = true
