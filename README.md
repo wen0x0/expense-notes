@@ -1,7 +1,5 @@
 # Expense Notes
 
-A tiny personal expense tracker for Cloudflare Workers + D1.
-
 ## Features
 
 - English UI
