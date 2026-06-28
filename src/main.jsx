@@ -185,7 +185,7 @@ function App() {
   return <main>
     <header className="hero">
       <div><p>Personal Expense Lite</p><h1>Expense Notes</h1><span>Retro sticky notes for quick VND tracking.</span></div>
-      <button className="primary" onClick={openAdd}>Add transaction</button>
+      <button className="primary hero-add" onClick={openAdd}><span className="add-icon" aria-hidden="true">+</span><span>Add transaction</span></button>
     </header>
 
     {error && <div className="alert">{error}</div>}
@@ -248,7 +248,7 @@ function App() {
       {categories.map(c => <div className="category" key={c.id}><span>{c.name}</span><small>{c.transaction_count} item(s)</small><button onClick={()=>removeCategory(c.id,c.transaction_count)}>Delete</button></div>)}
     </Section>
 
-    {showForm && <div className="modal"><form className="form" onSubmit={saveTransaction}><button type="button" className="x" onClick={()=>setShowForm(false)}>×</button><h2>{editing ? 'Edit transaction' : 'New transaction'}</h2><label>Type<select className={form.type === 'income' ? 'income-select' : 'expense-select'} value={form.type} onChange={e=>setForm({...form,type:e.target.value})}><option value="expense">Expense</option><option value="income">Income</option></select></label><label>Amount in thousands<input inputMode="decimal" type="text" placeholder="24 = 24,000 VND" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/><small>{amountPreview > 0 ? `Will save as ${money(amountPreview)}` : 'Examples: 24 = 24,000 VND · 24.5 = 24,500 VND'}</small></label><label>Category<select value={form.category_id} onChange={e=>setForm({...form,category_id:e.target.value})}>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Date<input type="date" value={form.occurred_at} onChange={e=>setForm({...form,occurred_at:e.target.value})}/></label><label>Note<input value={form.note} onChange={e=>setForm({...form,note:e.target.value})} placeholder="Coffee, salary, rent..."/></label><button className="primary">Save</button></form></div>}
+    {showForm && <div className="modal"><form className="form" onSubmit={saveTransaction}><button type="button" className="x" onClick={()=>setShowForm(false)}>×</button><h2>{editing ? 'Edit transaction' : 'New transaction'}</h2><label>Type<select className={form.type === 'income' ? 'income-select' : 'expense-select'} value={form.type} onChange={e=>setForm({...form,type:e.target.value})}><option value="expense">Expense</option><option value="income">Income</option></select></label><label>Amount in thousands<input inputMode="decimal" type="text" placeholder="24 = 24,000 VND" value={form.amount} onChange={e=>setForm({...form,amount:e.target.value})}/><small>{amountPreview > 0 ? `Will save as ${money(amountPreview)}` : 'Examples: 24 = 24,000 VND · 24.5 = 24,500 VND'}</small></label><label>Category<select value={form.category_id} onChange={e=>setForm({...form,category_id:e.target.value})}>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Date<input type="date" value={form.occurred_at} onChange={e=>setForm({...form,occurred_at:e.target.value})}/></label><label>Note<input value={form.note} onChange={e=>setForm({...form,note:e.target.value})} placeholder="Coffee, salary, rent..."/></label><button className="primary save-button"><span className="add-icon" aria-hidden="true">✓</span><span>Save transaction</span></button></form></div>}
   </main>;
 }
 createRoot(document.getElementById('root')).render(<App />);
