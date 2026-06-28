@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite build && wrangler dev --ip 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build --base=/expense-notes/",
     "deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply expense_notes_db --local",
     "db:seed": "wrangler d1 execute expense_notes_db --local --file=./seed/seed.sql",
