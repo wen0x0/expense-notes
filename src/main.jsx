@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
+import { API_BASE_URL } from './config';
 
 const money = n => new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -50,9 +51,17 @@ function App() {
 
   const toggleSection = id => setOpenSections(s => ({ ...s, [id]: !s[id] }));
 
+
   async function api(path, options) {
-    const res = await fetch(path, { headers: { 'content-type': 'application/json' }, ...options });
-    if (!res.ok) throw new Error((await res.json()).error || 'Something went wrong');
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      headers: { 'content-type': 'application/json' },
+      ...options
+    });
+  
+    if (!res.ok) {
+      throw new Error((await res.json()).error || 'Something went wrong');
+    }
+  
     return res.json();
   }
 

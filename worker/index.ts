@@ -3,6 +3,18 @@ import { Hono } from 'hono';
 type Env = { DB: D1Database; ASSETS: Fetcher };
 const app = new Hono<{ Bindings: Env }>();
 
+app.use('/api/*', async (c, next) => {
+  c.header('Access-Control-Allow-Origin', 'https://wen.is-a.dev');
+  c.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  c.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (c.req.method === 'OPTIONS') {
+    return c.body(null, 204);
+  }
+
+  await next();
+});
+
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } });
 const bad = (message: string, status = 400) => json({ error: message }, status);
 

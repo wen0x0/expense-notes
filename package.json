@@ -5,13 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite build && wrangler dev --ip 0.0.0.0",
-    "build": "vite build && wrangler deploy --dry-run --outdir dist-worker",
-    "preview": "npm run build && wrangler dev dist-worker/index.js",
+    "build": "vite build",
+    "deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply expense_notes_db --local",
     "db:seed": "wrangler d1 execute expense_notes_db --local --file=./seed/seed.sql",
     "db:reset": "rm -rf .wrangler/state && npm run db:migrate && npm run db:seed",
-    "deploy": "npm run build && wrangler deploy",
-    "dev:watch": "vite build --watch & wrangler dev --ip 0.0.0.0",
     "dev:docker": "vite build && npm run db:migrate && npm run db:seed && wrangler dev --ip 0.0.0.0"
   },
   "dependencies": {
