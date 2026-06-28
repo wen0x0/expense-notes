@@ -1,12 +1,17 @@
-main = "worker/index.ts"
-compatibility_date = "2026-06-01"
-assets = { directory = "./dist", binding = "ASSETS" }
+name = "worker0"
+main = "src/index.ts"
+compatibility_date = "2026-06-28"
+preview_urls = true
 
-# wrangler.toml
-name = 'worker0'
+[assets]
+directory = "./dist"
+binding = "ASSETS"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "expense_notes_db"
-database_id = "local-expense-notes-db"
+database_id = "5addc56d-9e7c-41f4-8684-4588a7d0a1f6"
 migrations_dir = "migrations"
+
+[observability]
+enabled = true
