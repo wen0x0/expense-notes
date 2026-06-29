@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 
-type Env = { DB: D1Database; ASSETS: Fetcher };
+type Env = { DB: D1Database; ASSETS: Fetcher; APP_PASSWORD?: string };
 const app = new Hono<{ Bindings: Env }>();
 
 app.use('/api/*', async (c, next) => {
   c.header('Access-Control-Allow-Origin', 'https://wen.is-a.dev');
   c.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  c.header('Access-Control-Allow-Headers', 'Content-Type');
+  c.header('Access-Control-Allow-Headers', 'Content-Type, X-App-Password');
 
   if (c.req.method === 'OPTIONS') {
     return c.body(null, 204);
@@ -17,6 +17,26 @@ app.use('/api/*', async (c, next) => {
 
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } });
 const bad = (message: string, status = 400) => json({ error: message }, status);
+
+app.all('/api/auth/check', c => {
+  const password = c.env.APP_PASSWORD;
+  if (!password) return bad('APP_PASSWORD is not configured on the Worker', 500);
+  const given = c.req.header('X-App-Password') || '';
+  if (given !== password) return bad('Wrong app password', 401);
+  return c.json({ ok: true });
+});
+
+app.use('/api/*', async (c, next) => {
+  if (c.req.path === '/api/health' || c.req.path === '/api/auth/check') {
+    await next();
+    return;
+  }
+  const password = c.env.APP_PASSWORD;
+  if (!password) return bad('APP_PASSWORD is not configured on the Worker', 500);
+  const given = c.req.header('X-App-Password') || '';
+  if (given !== password) return bad('Unauthorized', 401);
+  await next();
+});
 
 app.get('/api/health', c => c.json({ ok: true }));
 

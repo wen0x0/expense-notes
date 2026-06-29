@@ -19,6 +19,7 @@ const parseThousandVnd = value => {
   return Number.isFinite(num) ? Math.round(num * 1000) : 0;
 };
 const palette = ['#c99b61', '#87a47a', '#d59a8b', '#8da8bd', '#b9a275', '#b18bb0', '#8fb7a6', '#d7b46a'];
+const PASSWORD_KEY = 'expense_notes_app_password';
 const shortMonth = value => new Date(`${value}-01T00:00:00`).toLocaleDateString('en-US', { month: 'short' });
 const dayMonth = date => new Date(`${date}T00:00:00`).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
 const monthYear = value => new Date(`${value}-01T00:00:00`).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -45,6 +46,10 @@ function App() {
   const [editing, setEditing] = useState(null);
   const [newCategory, setNewCategory] = useState('');
   const [error, setError] = useState('');
+  const [appPassword, setAppPassword] = useState(() => localStorage.getItem(PASSWORD_KEY) || '');
+  const [loginPassword, setLoginPassword] = useState(() => localStorage.getItem(PASSWORD_KEY) || '');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [activityRange, setActivityRange] = useState('week');
   const [openSections, setOpenSections] = useState({ dashboard: true, pie: true, spending: true, activity: true, recent: true, categories: true });
   const [form, setForm] = useState({ type: 'expense', amount: '', category_id: '', note: '', occurred_at: today() });
@@ -52,16 +57,28 @@ function App() {
   const toggleSection = id => setOpenSections(s => ({ ...s, [id]: !s[id] }));
 
 
-  async function api(path, options) {
+  async function api(path, options = {}, passwordOverride) {
+    const password = passwordOverride ?? appPassword;
     const res = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { 'content-type': 'application/json' },
-      ...options
+      ...options,
+      headers: {
+        'content-type': 'application/json',
+        ...(password ? { 'X-App-Password': password } : {}),
+        ...(options.headers || {})
+      }
     });
-  
+
     if (!res.ok) {
-      throw new Error((await res.json()).error || 'Something went wrong');
+      let message = 'Something went wrong';
+      try { message = (await res.json()).error || message; } catch {}
+      if (res.status === 401) {
+        localStorage.removeItem(PASSWORD_KEY);
+        setAuthenticated(false);
+        setAppPassword('');
+      }
+      throw new Error(message);
     }
-  
+
     return res.json();
   }
 
@@ -71,7 +88,41 @@ function App() {
     if (!form.category_id && c[0]) setForm(f => ({ ...f, category_id: String(c[0].id) }));
   }
 
-  useEffect(() => { load().catch(err => setError(err.message)); }, []);
+  useEffect(() => {
+    if (!appPassword) {
+      setCheckingAuth(false);
+      return;
+    }
+    api('/api/auth/check')
+      .then(() => setAuthenticated(true))
+      .catch(err => setError(err.message))
+      .finally(() => setCheckingAuth(false));
+  }, []);
+
+  useEffect(() => {
+    if (authenticated) load().catch(err => setError(err.message));
+  }, [authenticated]);
+
+  async function login(e) {
+    e.preventDefault();
+    setError('');
+    const password = loginPassword.trim();
+    if (!password) return setError('Enter the app password.');
+    await api('/api/auth/check', { method: 'POST' }, password);
+    localStorage.setItem(PASSWORD_KEY, password);
+    setAppPassword(password);
+    setAuthenticated(true);
+  }
+
+  function logout() {
+    localStorage.removeItem(PASSWORD_KEY);
+    setAppPassword('');
+    setLoginPassword('');
+    setAuthenticated(false);
+    setCategories([]);
+    setTransactions([]);
+    setSummary({ totals: { income: 0, expense: 0 }, byCategory: [] });
+  }
 
   const balance = Number(summary.totals.income) - Number(summary.totals.expense);
   const maxCategorySpend = Math.max(...summary.byCategory.map(c => Number(c.expense || 0)), 1);
@@ -182,10 +233,26 @@ function App() {
     <div className="tx-actions"><button onClick={() => openEdit(t)}>Edit</button><button onClick={() => removeTransaction(t.id)}>Delete</button></div>
   </div>;
 
+  if (checkingAuth) {
+    return <main className="auth-page"><section className="panel auth-card"><h1>Expense Notes</h1><p>Checking app password...</p></section></main>;
+  }
+
+  if (!authenticated) {
+    return <main className="auth-page">
+      <form className="panel auth-card" onSubmit={login}>
+        <p>Private app</p>
+        <h1>Expense Notes</h1>
+        <label>App password<input type="password" autoFocus value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder="Enter shared password" /></label>
+        {error && <div className="alert">{error}</div>}
+        <button className="primary save-button" type="submit"><span className="add-icon" aria-hidden="true">→</span><span>Unlock app</span></button>
+      </form>
+    </main>;
+  }
+
   return <main>
     <header className="hero">
       <div><p>Personal Expense Lite</p><h1>Expense Notes</h1><span>Retro sticky notes for quick VND tracking.</span></div>
-      <button className="primary hero-add" onClick={openAdd}><span className="add-icon" aria-hidden="true">+</span><span>Add transaction</span></button>
+      <div className="hero-actions"><button className="primary hero-add" onClick={openAdd}><span className="add-icon" aria-hidden="true">+</span><span>Add transaction</span></button><button className="logout-button" onClick={logout}>Lock</button></div>
     </header>
 
     {error && <div className="alert">{error}</div>}

@@ -917,3 +917,47 @@ details + details{border-top:1px dashed var(--rule-strong);}
     transform:translateX(24px)!important;
   }
 }
+
+/* === Shared password lock screen === */
+.auth-page{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+}
+.auth-card{
+  width:min(440px,100%);
+  display:grid;
+  gap:16px;
+  padding:28px 22px 22px!important;
+}
+.auth-card p{
+  margin:0;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  font-size:12px;
+  font-weight:900;
+}
+.auth-card h1{
+  margin:0;
+  font-size:44px;
+  line-height:.95;
+}
+.hero-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.logout-button{
+  background:rgba(255,250,240,.7);
+}
+@media(max-width:700px){
+  .auth-page{padding:16px;}
+  .auth-card{padding:30px 18px 20px!important;}
+  .auth-card h1{font-size:46px;}
+  .hero-actions{width:100%;display:grid;grid-template-columns:1fr auto;}
+  .hero-actions .hero-add{width:100%;}
+  .logout-button{min-width:72px!important;}
+}
