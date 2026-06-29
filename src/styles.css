@@ -961,3 +961,32 @@ details + details{border-top:1px dashed var(--rule-strong);}
   .hero-actions .hero-add{width:100%;}
   .logout-button{min-width:72px!important;}
 }
+
+
+/* === Activity month year watermark === */
+.activity-chart-wrap{
+  position:relative;
+}
+.activity-year-watermark{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:clamp(4rem,11vw,8rem);
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-.06em;
+  color:rgba(88,70,42,.09);
+  pointer-events:none;
+  user-select:none;
+  z-index:0;
+}
+.activity-chart-wrap .daychart{
+  position:relative;
+  z-index:1;
+}
+@media(max-width:700px){
+  .activity-year-watermark{
+    font-size:clamp(3.6rem,20vw,6.6rem);
+  }
+}

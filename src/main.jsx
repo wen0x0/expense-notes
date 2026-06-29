@@ -22,7 +22,7 @@ const palette = ['#c99b61', '#87a47a', '#d59a8b', '#8da8bd', '#b9a275', '#b18bb0
 const PASSWORD_KEY = 'expense_notes_app_password';
 const shortMonth = value => new Date(`${value}-01T00:00:00`).toLocaleDateString('en-US', { month: 'short' });
 const dayMonth = date => new Date(`${date}T00:00:00`).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
-const monthYear = value => new Date(`${value}-01T00:00:00`).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+const monthLabel = value => new Date(`${value}-01T00:00:00`).toLocaleDateString('en-US', { month: 'short' });
 
 function Section({ id, title, note, open, onToggle, children, actions }) {
   return <section className="panel section-card">
@@ -157,7 +157,7 @@ function App() {
       const months = Array.from({ length: 6 }, (_, i) => {
         const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        return { key, label: monthYear(key), income: 0, expense: 0 };
+        return { key, label: monthLabel(key), income: 0, expense: 0 };
       });
       const map = Object.fromEntries(months.map(m => [m.key, m]));
       transactions.forEach(t => {
@@ -180,6 +180,7 @@ function App() {
     return days;
   }, [transactions, activityRange]);
   const maxActivity = Math.max(...activityData.map(d => Math.max(d.income, d.expense)), 1);
+  const activityYear = new Date().getFullYear();
   const amountPreview = parseThousandVnd(form.amount);
 
   function openAdd() {
@@ -251,7 +252,7 @@ function App() {
 
   return <main>
     <header className="hero">
-      <div><p>Personal Expense Lite</p><h1>Expense Notes</h1><span>Retro sticky notes for quick VND tracking.</span></div>
+      <div><p>Personal Expense Lite</p><h1>Expense Notes</h1><span>Sticky notes for quick expense tracking.</span></div>
       <div className="hero-actions"><button className="primary hero-add" onClick={openAdd}><span className="add-icon" aria-hidden="true">+</span><span>Add transaction</span></button><button className="logout-button" onClick={logout}>Lock</button></div>
     </header>
 
@@ -285,14 +286,17 @@ function App() {
     </Section>
 
     <Section id="activity" title="Activity track" note={activityRange === 'week' ? 'Last 7 days' : 'Last 6 months'} open={openSections.activity} onToggle={toggleSection} actions={<div className="range-control"><span>Day</span><button className={`range-switch ${activityRange === 'month6' ? 'is-month' : ''}`} type="button" aria-label={activityRange === 'week' ? 'Switch to monthly view' : 'Switch to daily view'} title={activityRange === 'week' ? 'Switch to monthly view' : 'Switch to daily view'} onClick={()=>setActivityRange(activityRange === 'week' ? 'month6' : 'week')}><i /></button><span>Month</span></div>}>
-      <div className="daychart">
-        {activityData.map(d => <div className="day" key={d.key}>
-          <div className="cols">
-            <i className="income" style={{ height: `${Math.max((d.income / maxActivity) * 100, d.income ? 6 : 0)}%` }} title={`Income ${money(d.income)}`} />
-            <i className="expense" style={{ height: `${Math.max((d.expense / maxActivity) * 100, d.expense ? 6 : 0)}%` }} title={`Expense ${money(d.expense)}`} />
-          </div>
-          <small>{d.label}</small>
-        </div>)}
+      <div className="activity-chart-wrap">
+        {activityRange === 'month6' && <div className="activity-year-watermark" aria-hidden="true">{activityYear}</div>}
+        <div className="daychart">
+          {activityData.map(d => <div className="day" key={d.key}>
+            <div className="cols">
+              <i className="income" style={{ height: `${Math.max((d.income / maxActivity) * 100, d.income ? 6 : 0)}%` }} title={`Income ${money(d.income)}`} />
+              <i className="expense" style={{ height: `${Math.max((d.expense / maxActivity) * 100, d.expense ? 6 : 0)}%` }} title={`Expense ${money(d.expense)}`} />
+            </div>
+            <small>{d.label}</small>
+          </div>)}
+        </div>
       </div>
       <div className="legend"><span className="line income-line"></span> Income <span className="line expense-line"></span> Expense</div>
     </Section>
